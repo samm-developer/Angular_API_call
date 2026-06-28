@@ -1,0 +1,163 @@
+<div class="page">
+  <header class="header">
+    <h1>JSONPlaceholder Posts API</h1>
+    <p class="subtitle">Angular integration with <a href="https://jsonplaceholder.typicode.com/" target="_blank" rel="noopener">jsonplaceholder.typicode.com</a></p>
+  </header>
+
+  @if (loading) {
+    <div class="alert alert-info">Loading...</div>
+  }
+  @if (error) {
+    <div class="alert alert-error">{{ error }}</div>
+  }
+  @if (successMessage) {
+    <div class="alert alert-success">{{ successMessage }}</div>
+  }
+
+  <div class="toolbar">
+    <button class="btn btn-primary" (click)="loadPosts()">GET /posts</button>
+    <button class="btn btn-primary" (click)="openCreateForm()">POST /posts</button>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>All Posts</h2>
+      <ul class="post-list">
+        @for (post of posts; track post.id) {
+          <li
+            class="post-item"
+            [class.active]="selectedPost?.id === post.id"
+            (click)="viewPost(post.id)"
+          >
+            <span class="post-id">#{{ post.id }}</span>
+            <span class="post-title">{{ post.title }}</span>
+          </li>
+        }
+      </ul>
+    </aside>
+
+    <main class="content">
+      @if (showCreateForm) {
+        <section class="card">
+          <h2>POST /posts</h2>
+          <form (ngSubmit)="createPost()" class="form">
+            <label>
+              Title
+              <input [(ngModel)]="newPost.title" name="title" required />
+            </label>
+            <label>
+              Body
+              <textarea [(ngModel)]="newPost.body" name="body" rows="4" required></textarea>
+            </label>
+            <label>
+              User ID
+              <input type="number" [(ngModel)]="newPost.userId" name="userId" required />
+            </label>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Create Post</button>
+              <button type="button" class="btn btn-secondary" (click)="showCreateForm = false">Cancel</button>
+            </div>
+          </form>
+        </section>
+      }
+
+      @if (selectedPost) {
+        <section class="card">
+          <div class="card-header">
+            <h2>GET /posts/{{ selectedPost.id }}</h2>
+            <button class="btn btn-ghost" (click)="clearSelection()">Clear</button>
+          </div>
+
+          <div class="post-detail">
+            <p><strong>ID:</strong> {{ selectedPost.id }}</p>
+            <p><strong>User ID:</strong> {{ selectedPost.userId }}</p>
+            <p><strong>Title:</strong> {{ selectedPost.title }}</p>
+            <p><strong>Body:</strong> {{ selectedPost.body }}</p>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn-secondary" (click)="loadCommentsNested(selectedPost.id)">
+              GET /posts/{{ selectedPost.id }}/comments
+            </button>
+            <button class="btn btn-secondary" (click)="loadCommentsQuery(selectedPost.id)">
+              GET /comments?postId={{ selectedPost.id }}
+            </button>
+            <button class="btn btn-warning" (click)="openEditForm(selectedPost)">PUT /posts/{{ selectedPost.id }}</button>
+            <button class="btn btn-warning" (click)="openPatchForm(selectedPost)">PATCH /posts/{{ selectedPost.id }}</button>
+            <button class="btn btn-danger" (click)="deletePost(selectedPost.id)">DELETE /posts/{{ selectedPost.id }}</button>
+          </div>
+        </section>
+
+        @if (showEditForm) {
+          <section class="card">
+            <h2>PUT /posts/{{ editPost.id }}</h2>
+            <form (ngSubmit)="updatePost()" class="form">
+              <label>
+                Title
+                <input [(ngModel)]="editPost.title" name="editTitle" required />
+              </label>
+              <label>
+                Body
+                <textarea [(ngModel)]="editPost.body" name="editBody" rows="4" required></textarea>
+              </label>
+              <label>
+                User ID
+                <input type="number" [(ngModel)]="editPost.userId" name="editUserId" required />
+              </label>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Update Post</button>
+                <button type="button" class="btn btn-secondary" (click)="showEditForm = false">Cancel</button>
+              </div>
+            </form>
+          </section>
+        }
+
+        @if (showPatchForm) {
+          <section class="card">
+            <h2>PATCH /posts/{{ editPost.id }}</h2>
+            <form (ngSubmit)="patchPost()" class="form">
+              <label>
+                Title
+                <input [(ngModel)]="patchTitle" name="patchTitle" />
+              </label>
+              <label>
+                Body
+                <textarea [(ngModel)]="patchBody" name="patchBody" rows="4"></textarea>
+              </label>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Patch Post</button>
+                <button type="button" class="btn btn-secondary" (click)="showPatchForm = false">Cancel</button>
+              </div>
+            </form>
+          </section>
+        }
+
+        @if (comments.length > 0) {
+          <section class="card">
+            <h2>
+              Comments
+              @if (commentSource === 'nested') {
+                <span class="badge">/posts/{{ selectedPost.id }}/comments</span>
+              }
+              @if (commentSource === 'query') {
+                <span class="badge">/comments?postId={{ selectedPost.id }}</span>
+              }
+            </h2>
+            <ul class="comment-list">
+              @for (comment of comments; track comment.id) {
+                <li class="comment-item">
+                  <p class="comment-meta">{{ comment.name }} &lt;{{ comment.email }}&gt;</p>
+                  <p>{{ comment.body }}</p>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      } @else if (!showCreateForm) {
+        <section class="card empty-state">
+          <p>Select a post from the list or create a new one to get started.</p>
+        </section>
+      }
+    </main>
+  </div>
+</div>
